@@ -40,15 +40,16 @@ func (p *processor) Process(e queue.Element) {
 		pLogger.Printf("Invalid data type. Expected *queue.ElementData. Got %v\n", data)
 		return
 	}
+	// fmt.Printf("depth: %v\n", data.Depth)
+	toFetch := CreateToFetchUrl(data.CurUrl, data.Path)
 	fetchedElementData := &queue.FetchedElementData{
 		Urls:    []string{},
 		Depth:   data.Depth,
 		BaseUrl: data.BaseUrl,
 		Path:    data.Path,
+		CurUrl:  toFetch,
 	}
 	elementType := FETCHED_URL_ERROR
-
-	toFetch := CreateToFetchUrl(data.BaseUrl, data.Path)
 
 	defer func() {
 		if elementType == FETCHED_URLS {
@@ -92,5 +93,5 @@ func (p *processor) Process(e queue.Element) {
 		return
 	}
 	elementType = FETCHED_URLS
-	fetchedElementData.Urls = childUrls
+	fetchedElementData.Urls = VerifyValidUrls(data.BaseUrl, childUrls)
 }

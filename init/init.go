@@ -51,11 +51,11 @@ func Init() {
 		panic(fmt.Sprintf("error opening out file: %v", err))
 	}
 
-	fetcher := fetcher.NewFetcher()
+	fetcher := fetcher.NewFetcher(LogFile)
 	store := store.NewSitemapStore()
 	fetchQ := queue.NewQueue("crawler")
 	fetchedQ := queue.NewQueue("crawler")
 	Reader = queue.NewReader(fetchQ)
-	Crawler = crawler.InitAndNewCrawler(LogFile, store, queue.NewReader(fetchedQ), queue.NewWriter(fetchQ), Conf.MaxDepth)
+	Crawler = crawler.InitAndNewCrawler(LogFile, store, queue.NewReader(fetchedQ), queue.NewWriter(fetchQ))
 	Processor = crawler.NewProcessor(LogFile, Conf.MaxDepth, queue.NewWriter(fetchedQ), fetcher)
 }

@@ -1,12 +1,16 @@
 package fetcher
 
 import (
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
 	"golang.org/x/net/html"
 )
+
+var fLogger *log.Logger
 
 type fetcher struct {
 }
@@ -16,6 +20,11 @@ type parser struct {
 }
 
 func (f *fetcher) FetchURL(url string) ([]string, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			fLogger.Println("panic occurred:", err)
+		}
+	}()
 	resp, err := http.Get(url)
 	if err != nil {
 		return []string{}, err
@@ -54,6 +63,7 @@ func (p *parser) parse(node *html.Node) {
 	}
 }
 
-func NewFetcher() IFetcher {
+func NewFetcher(logOutput io.Writer) IFetcher {
+	fLogger = log.New(logOutput, "[fetcher]", log.LstdFlags)
 	return &fetcher{}
 }

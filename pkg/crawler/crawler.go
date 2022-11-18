@@ -14,7 +14,6 @@ type crawler struct {
 	siteMapStore store.ISitemapStore
 	reader       queue.IReader
 	writer       queue.IWriter
-	depth        int
 }
 
 func (c *crawler) StartCrawl(url string) error {
@@ -30,7 +29,7 @@ func (c *crawler) StartCrawl(url string) error {
 	c.siteMapStore.AddToSitemap(url, []string{})
 	c.siteMapStore.AddProgressToSitemap(url, "", []string{"/"})
 	return c.writer.Write(queue.NewFetchQueueElement(&queue.FetchElementData{
-		Path: "/", BaseUrl: url, Depth: c.depth,
+		Path: "/", BaseUrl: url, CurUrl: url, Depth: 1,
 	}, url, FETCH_URL))
 }
 
@@ -39,7 +38,15 @@ func (c *crawler) WaitAndGetSitemap(url string) (map[string]bool, error) {
 		return c.siteMapStore.GetSitemap(url)
 	}
 	<-c.siteMapStore.WaitAndGetSitemap(url)
+	// res, err := c.siteMapStore.GetSitemap(url)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return c.siteMapStore.GetSitemap(url)
+	// ret := make(map[string]bool)
+	// for k, v := range res {
+	// 	CreateToFetchUrl()
+	// }
 }
 
 func (c *crawler) processFetchedURLs() {
@@ -67,6 +74,7 @@ func (c *crawler) processFetchedURLs() {
 				go c.writer.Write(queue.NewFetchQueueElement(&queue.FetchElementData{
 					Path:    url,
 					BaseUrl: baseURL,
+					CurUrl:  CreateToFetchUrl(data.CurUrl, url),
 					Depth:   data.Depth + 1,
 				}, baseURL, FETCH_URL))
 			}
@@ -77,14 +85,13 @@ func (c *crawler) processFetchedURLs() {
 	}
 }
 
-func InitAndNewCrawler(logOutput io.Writer, sitemapStore store.ISitemapStore, reader queue.IReader, writer queue.IWriter, depth int) ICrawler {
+func InitAndNewCrawler(logOutput io.Writer, sitemapStore store.ISitemapStore, reader queue.IReader, writer queue.IWriter) ICrawler {
 	cLogger = log.New(logOutput, "[crawler]", log.LstdFlags)
 
 	c := &crawler{
 		reader:       reader,
 		writer:       writer,
 		siteMapStore: sitemapStore,
-		depth:        depth,
 	}
 	go c.processFetchedURLs()
 	return c

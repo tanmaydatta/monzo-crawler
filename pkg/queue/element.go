@@ -24,6 +24,7 @@ type FetchedElementData struct {
 	Urls    []string
 	Depth   int
 	BaseUrl string
+	CurUrl  string
 	Path    string
 }
 
@@ -31,6 +32,7 @@ type FetchElementData struct {
 	Robots  string // TODO:
 	Path    string
 	BaseUrl string
+	CurUrl  string
 	Depth   int
 }
 

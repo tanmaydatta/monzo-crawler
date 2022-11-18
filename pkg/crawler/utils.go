@@ -1,6 +1,8 @@
 package crawler
 
-import "net/url"
+import (
+	"net/url"
+)
 
 func VerifySameDomain(baseUrl, path string) bool {
 	b, _ := url.Parse(baseUrl)
@@ -16,4 +18,23 @@ func CreateToFetchUrl(baseUrl, path string) string {
 	u.Fragment = ""
 	b.Fragment = ""
 	return b.ResolveReference(u).String()
+}
+
+func VerifyValidUrls(baseUrl string, urls []string) []string {
+	ret := make([]string, 0, len(urls))
+	b, _ := url.Parse(baseUrl)
+	for _, u := range urls {
+		u2, err := url.Parse(u)
+		if err != nil {
+			continue
+		}
+		if u2, err = url.ParseRequestURI(b.ResolveReference(u2).String()); err != nil {
+			continue
+		}
+		if u2.Scheme != "http" && u2.Scheme != "https" {
+			continue
+		}
+		ret = append(ret, u)
+	}
+	return ret
 }
