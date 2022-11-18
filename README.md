@@ -13,31 +13,31 @@ This will save the output to `out` directory. On every run, new output file is c
 ### Configuration
 The following attributes are configurable via `config/config.yaml`
 
-####log_file: 
+#### log_file: 
 
 `filename for logs printed during the execution of the program. Defaults to os.Stdout`
 
-####out_file: 
+#### out_file: 
 
 `filename for output file`
 
-####workers: 
+#### workers: 
 
 `number of concurrently fetched urls`
 
-####max_depth: 
+#### max_depth: 
 
 `number of levels to go down while fetching urls. Each time we follow the links present on a url, we increase a level.`
 
-####request_timeout: 
+#### request_timeout: 
 
 `time after request to a url will timeout`
   
-####max_attempts: 
+#### max_attempts: 
 
 `number of retries to make if fetching of url fails`
   
-####max_delay: 
+#### max_delay: 
 
 `maximum duration to wait while retrying`
 
