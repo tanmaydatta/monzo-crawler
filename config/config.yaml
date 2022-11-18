@@ -4,10 +4,14 @@ dev:
   max_depth: 2
   out_file: debug_out
   request_timeout: 2
+  max_attempts: 3
+  max_delay: 3
 
 release:
   log_file: log
   out_file: out
   workers: 50
-  max_depth: 2
+  max_depth: 7
   request_timeout: 2
+  max_attempts: 3
+  max_delay: 3

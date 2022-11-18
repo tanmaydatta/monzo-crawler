@@ -3,6 +3,7 @@ module monzo-crawler
 go 1.19
 
 require (
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1

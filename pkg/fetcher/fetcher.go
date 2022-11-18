@@ -5,18 +5,22 @@ import (
 	"io/ioutil"
 	"log"
 	"monzo-crawler/config"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/avast/retry-go"
 	"golang.org/x/net/html"
 )
 
 var fLogger *log.Logger
 
 type fetcher struct {
-	client *http.Client
+	client      *http.Client
+	maxDelay    time.Duration
+	maxAttempts int
 }
 
 type parser struct {
@@ -39,15 +43,22 @@ func (f *fetcher) FetchChildURLs(url string) ([]string, error) {
 }
 
 func (f *fetcher) fetchURL(url string) (string, error) {
-	resp, err := f.client.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+	var body []byte
+	retry.Do(
+		func() error {
+			var err error
+			var resp *http.Response
+			resp, err = f.client.Get(url)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			body, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			return nil
+		}, retry.Attempts(uint(f.maxAttempts)), retry.MaxDelay(f.maxDelay))
 	return string(body), nil
 }
 
@@ -89,10 +100,27 @@ func (p *parser) parse(node *html.Node) {
 
 func NewFetcher(logOutput io.Writer) IFetcher {
 	fLogger = log.New(logOutput, "[fetcher]", log.LstdFlags)
-	requestTimeout := 2
-	if config.Conf.RequestTimeout > 0 {
-		requestTimeout = config.Conf.RequestTimeout
+	requestTimeout := config.Conf.RequestTimeout
+	maxAttempts := config.Conf.MaxAttempts
+	maxDelay := config.Conf.MaxDelay
+	if requestTimeout == 0 {
+		requestTimeout = 2
 	}
-	client := &http.Client{Timeout: time.Duration(requestTimeout) * time.Second}
-	return &fetcher{client: client}
+	if maxAttempts == 0 {
+		maxAttempts = 3
+	}
+	if maxDelay == 0 {
+		maxDelay = 3
+	}
+	transport := http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			// Modify the time to wait for a connection to establish
+			Timeout:   time.Duration(requestTimeout) * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: time.Duration(requestTimeout) * time.Second,
+	}
+	client := &http.Client{Transport: &transport, Timeout: time.Duration(requestTimeout) * time.Second}
+	return &fetcher{client: client, maxAttempts: maxAttempts, maxDelay: time.Duration(maxDelay)}
 }
