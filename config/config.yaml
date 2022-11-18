@@ -8,4 +8,4 @@ release:
   log_file: log
   out_file: out
   workers: 50
-  max_depth: 10
+  max_depth: 2

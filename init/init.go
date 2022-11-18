@@ -48,8 +48,12 @@ func Init() {
 	if Conf.LogFile != "" {
 		Conf.LogFile = "out/out"
 	}
+	out := filepath.Join(Conf.OutFile, fmt.Sprintf("out_%v", time.Now().Unix()))
+	if _, err := os.Stat("/path/to/your-file"); os.IsNotExist(err) {
+		_ = os.MkdirAll(Conf.OutFile, 0700)
+	}
 
-	OutFile, err = os.OpenFile(filepath.Join(Conf.OutFile, fmt.Sprintf("out_%v", time.Now().Unix())), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	OutFile, err = os.OpenFile(out, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(fmt.Sprintf("error opening out file: %v", err))
 	}
