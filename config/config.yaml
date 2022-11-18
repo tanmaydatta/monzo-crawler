@@ -1,0 +1,11 @@
+env: release
+dev:
+  workers: 10
+  max_depth: 2
+  out_file: debug_out
+
+release:
+  log_file: log
+  out_file: out/out
+  workers: 10
+  max_depth: 10
