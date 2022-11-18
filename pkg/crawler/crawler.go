@@ -64,11 +64,9 @@ func (c *crawler) processFetchedURLs() {
 			c.siteMapStore.AddProgressToSitemap(baseURL, data.Path, []string{})
 		case FETCHED_URLS:
 			data := e.GetData().(*queue.FetchedElementData)
-			// fmt.Printf("depth: %v\n", data.Depth)
 			urls := make([]string, 0, len(data.Urls))
 			urlsToFetch := make([]string, 0, len(data.Urls))
 			for _, url := range data.Urls {
-				// fmt.Println(VerifySameDomain(data.BaseUrl, "/:true"))
 				if !VerifySameDomain(data.BaseUrl, url) {
 					continue
 				}

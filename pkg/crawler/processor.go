@@ -40,7 +40,6 @@ func (p *processor) Process(e queue.Element) {
 		pLogger.Printf("Invalid data type. Expected *queue.ElementData. Got %v\n", data)
 		return
 	}
-	// fmt.Printf("depth: %v\n", data.Depth)
 	toFetch := CreateToFetchUrl(data.CurUrl, data.Path)
 	fetchedElementData := &queue.FetchedElementData{
 		Urls:    []string{},

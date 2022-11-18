@@ -18,7 +18,6 @@ func CreateToFetchUrl(baseUrl, path string) *url.URL {
 	u, _ := url.Parse(path)
 	u.Fragment = ""
 	b.Fragment = ""
-	// fmt.Printf("%v %v %v\n", b.ResolveReference(u).String(), baseUrl, path)
 	return b.ResolveReference(u)
 }
 
