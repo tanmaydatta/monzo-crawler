@@ -9,6 +9,8 @@ import (
 	"monzo-crawler/pkg/queue"
 	"monzo-crawler/pkg/store"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -46,7 +48,8 @@ func Init() {
 	if Conf.LogFile != "" {
 		Conf.LogFile = "out/out"
 	}
-	OutFile, err = os.OpenFile(Conf.OutFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	OutFile, err = os.OpenFile(filepath.Join(Conf.OutFile, fmt.Sprintf("out_%v", time.Now().Unix())), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		panic(fmt.Sprintf("error opening out file: %v", err))
 	}

@@ -3,6 +3,7 @@ package crawler
 import (
 	"io"
 	"log"
+	"monzo-crawler/pkg/fetcher"
 	"monzo-crawler/pkg/queue"
 	"monzo-crawler/pkg/store"
 	urlpkg "net/url"
@@ -14,6 +15,7 @@ type crawler struct {
 	siteMapStore store.ISitemapStore
 	reader       queue.IReader
 	writer       queue.IWriter
+	fetcher      fetcher.IFetcher
 }
 
 func (c *crawler) StartCrawl(url string) error {
@@ -29,7 +31,7 @@ func (c *crawler) StartCrawl(url string) error {
 	c.siteMapStore.AddToSitemap(url, []string{})
 	c.siteMapStore.AddProgressToSitemap(url, "", []string{"/"})
 	return c.writer.Write(queue.NewFetchQueueElement(&queue.FetchElementData{
-		Path: "/", BaseUrl: url, CurUrl: url, Depth: 1,
+		Path: "/", BaseUrl: url, CurUrl: url, Depth: 1, Robots: c.fetcher.FetchRobotsTxt(url),
 	}, url, FETCH_URL))
 }
 
@@ -38,15 +40,7 @@ func (c *crawler) WaitAndGetSitemap(url string) (map[string]bool, error) {
 		return c.siteMapStore.GetSitemap(url)
 	}
 	<-c.siteMapStore.WaitAndGetSitemap(url)
-	// res, err := c.siteMapStore.GetSitemap(url)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	return c.siteMapStore.GetSitemap(url)
-	// ret := make(map[string]bool)
-	// for k, v := range res {
-	// 	CreateToFetchUrl()
-	// }
 }
 
 func (c *crawler) processFetchedURLs() {
@@ -79,14 +73,15 @@ func (c *crawler) processFetchedURLs() {
 					continue
 				}
 				toFetch := CreateToFetchUrl(data.CurUrl, url)
-				urlsToFetch = append(urlsToFetch, toFetch)
+				urlsToFetch = append(urlsToFetch, toFetch.String())
 				urls = append(urls, url)
 
 				go c.writer.Write(queue.NewFetchQueueElement(&queue.FetchElementData{
 					Path:    url,
 					BaseUrl: baseURL,
-					CurUrl:  toFetch,
+					CurUrl:  toFetch.String(),
 					Depth:   data.Depth + 1,
+					Robots:  data.Robots,
 				}, baseURL, FETCH_URL))
 			}
 
@@ -103,6 +98,7 @@ func InitAndNewCrawler(logOutput io.Writer, sitemapStore store.ISitemapStore, re
 		reader:       reader,
 		writer:       writer,
 		siteMapStore: sitemapStore,
+		fetcher:      fetcher.NewFetcher(logOutput),
 	}
 	go c.processFetchedURLs()
 	return c

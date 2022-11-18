@@ -6,6 +6,6 @@ dev:
 
 release:
   log_file: log
-  out_file: out/out
+  out_file: out
   workers: 50
   max_depth: 10

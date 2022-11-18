@@ -12,14 +12,14 @@ func VerifySameDomain(baseUrl, path string) bool {
 	return !(u.Host != "" && u.Host != b.Host)
 }
 
-func CreateToFetchUrl(baseUrl, path string) string {
+func CreateToFetchUrl(baseUrl, path string) *url.URL {
 
 	b, _ := url.Parse(baseUrl)
 	u, _ := url.Parse(path)
 	u.Fragment = ""
 	b.Fragment = ""
 	// fmt.Printf("%v %v %v\n", b.ResolveReference(u).String(), baseUrl, path)
-	return b.ResolveReference(u).String()
+	return b.ResolveReference(u)
 }
 
 func VerifyValidUrls(baseUrl string, urls []string) []string {

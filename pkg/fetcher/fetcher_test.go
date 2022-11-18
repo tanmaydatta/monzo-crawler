@@ -26,21 +26,21 @@ func TestFetchURL(t *testing.T) {
 		name     string
 		body     string
 	}{
-		{url: "https://monzo.com/:true", expected: []string{}, err: true, name: "invalid URL for parser"},
-		// {url: "http://:8181", expected: []string{}, err: false, name: "non html body", body: "hello world"},
-		// {
-		// 	url:      "http://:8181",
-		// 	expected: []string{"foo", "/bar/baz"},
-		// 	err:      false,
-		// 	name:     "non html body",
-		// 	body:     `<p>Links:</p><ul><li><a href="foo">Foo</a><li><a href="/bar/baz">BarBaz</a></ul>`,
-		// },
+		{url: "s", expected: []string{}, err: true, name: "invalid URL for parser"},
+		{url: "http://:8181", expected: []string{}, err: false, name: "non html body", body: "hello world"},
+		{
+			url:      "http://:8181",
+			expected: []string{"foo", "/bar/baz"},
+			err:      false,
+			name:     "non html body",
+			body:     `<p>Links:</p><ul><li><a href="foo">Foo</a><li><a href="/bar/baz">BarBaz</a></ul>`,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			body = tc.body
-			urls, err := f.FetchURL(tc.url)
+			urls, err := f.FetchChildURLs(tc.url)
 			assert.Equal(t, tc.expected, urls)
 			assert.Equal(t, tc.err, err != nil)
 		})

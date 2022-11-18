@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -21,23 +22,42 @@ type parser struct {
 	childURLs []string
 }
 
-func (f *fetcher) FetchURL(url string) ([]string, error) {
+func (f *fetcher) FetchChildURLs(url string) ([]string, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			fLogger.Println("panic occurred:", err)
 		}
 	}()
-	resp, err := f.client.Get(url)
-	if err != nil {
-		return []string{}, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := f.fetchURL(url)
 	if err != nil {
 		return []string{}, err
 	}
 
-	return f.parseAndGetChildURLs(string(body))
+	return f.parseAndGetChildURLs(body)
+}
+
+func (f *fetcher) fetchURL(url string) (string, error) {
+	resp, err := f.client.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+func (f *fetcher) FetchRobotsTxt(u string) string {
+	r, _ := url.Parse("robots.txt")
+	base, _ := url.Parse(u)
+	body, err := f.fetchURL(base.ResolveReference(r).String())
+	if err != nil {
+		fLogger.Println("error in fetching robots.txt", err)
+	}
+	return body
 }
 
 func (f *fetcher) parseAndGetChildURLs(body string) ([]string, error) {

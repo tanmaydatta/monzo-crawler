@@ -26,6 +26,7 @@ type FetchedElementData struct {
 	BaseUrl string
 	CurUrl  string
 	Path    string
+	Robots  string
 }
 
 type FetchElementData struct {

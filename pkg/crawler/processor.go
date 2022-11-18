@@ -47,13 +47,14 @@ func (p *processor) Process(e queue.Element) {
 		Depth:   data.Depth,
 		BaseUrl: data.BaseUrl,
 		Path:    data.Path,
-		CurUrl:  toFetch,
+		CurUrl:  toFetch.String(),
+		Robots:  data.Robots,
 	}
 	elementType := FETCHED_URL_ERROR
 
 	defer func() {
 		if elementType == FETCHED_URLS {
-			p.fetched.Store(toFetch, true)
+			p.fetched.Store(toFetch.String(), true)
 		}
 		if err := p.writer.Write(queue.NewFetchedQueueElement(fetchedElementData, e.GetBaseURL(), elementType)); err != nil {
 			pLogger.Printf("Error while writing to fetched url stream. err: %v\n", err)
@@ -65,7 +66,7 @@ func (p *processor) Process(e queue.Element) {
 		return
 	}
 
-	if fetched, ok := p.fetched.Load(toFetch); ok && fetched.(bool) {
+	if fetched, ok := p.fetched.Load(toFetch.String()); ok && fetched.(bool) {
 		pLogger.Printf("Already fetched. %v\n", toFetch)
 		return
 	}
@@ -78,16 +79,16 @@ func (p *processor) Process(e queue.Element) {
 	if err != nil {
 		pLogger.Printf("Invalid robots.txt url %v\n", toFetch)
 	}
-	if robots != nil && !robots.TestAgent(data.Path, "crawler") {
-		pLogger.Printf("Cannot fetch url due to robots.txt restriction robots %v, url %v\n", data.Robots, toFetch)
+	if robots != nil && !robots.TestAgent(toFetch.Path, "crawler") {
+		pLogger.Printf("Cannot fetch url due to robots.txt restriction, url %v\n", toFetch)
 		return
 	}
 
-	if !strings.Contains(toFetch, data.BaseUrl) {
+	if !strings.Contains(toFetch.String(), data.BaseUrl) {
 		pLogger.Printf("Out of domain url")
 		return
 	}
-	childUrls, err := p.fetcher.FetchURL(toFetch)
+	childUrls, err := p.fetcher.FetchChildURLs(toFetch.String())
 	if err != nil {
 		pLogger.Printf("Error while fetching url. Url: %v, err: %v\n", toFetch, err)
 		return

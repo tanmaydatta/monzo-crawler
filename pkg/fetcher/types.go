@@ -1,5 +1,6 @@
 package fetcher
 
 type IFetcher interface {
-	FetchURL(url string) ([]string, error)
+	FetchChildURLs(url string) ([]string, error)
+	FetchRobotsTxt(u string) string
 }
