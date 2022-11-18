@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"monzo-crawler/config"
 	"net/http"
 	"net/url"
 	"strings"
@@ -88,6 +89,10 @@ func (p *parser) parse(node *html.Node) {
 
 func NewFetcher(logOutput io.Writer) IFetcher {
 	fLogger = log.New(logOutput, "[fetcher]", log.LstdFlags)
-	client := &http.Client{Timeout: 2 * time.Second}
+	requestTimeout := 2
+	if config.Conf.RequestTimeout > 0 {
+		requestTimeout = config.Conf.RequestTimeout
+	}
+	client := &http.Client{Timeout: time.Duration(requestTimeout) * time.Second}
 	return &fetcher{client: client}
 }

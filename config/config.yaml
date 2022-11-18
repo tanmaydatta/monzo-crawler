@@ -3,9 +3,11 @@ dev:
   workers: 10
   max_depth: 2
   out_file: debug_out
+  request_timeout: 2
 
 release:
   log_file: log
   out_file: out
   workers: 50
   max_depth: 2
+  request_timeout: 2

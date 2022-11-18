@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	Conf      config.Config
 	Crawler   crawler.ICrawler
 	Processor crawler.IProcessor
 	Reader    queue.IReader
@@ -33,24 +32,24 @@ func Init() {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 	env := viper.GetString("env")
-	if err := viper.UnmarshalKey(env, &Conf); err != nil {
+	if err := viper.UnmarshalKey(env, &config.Conf); err != nil {
 		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
-	Conf.Env = env
+	config.Conf.Env = env
 	LogFile := os.Stdout
 	var err error
-	if Conf.LogFile != "" {
-		LogFile, err = os.OpenFile(Conf.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if config.Conf.LogFile != "" {
+		LogFile, err = os.OpenFile(config.Conf.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
 			panic(fmt.Sprintf("error opening log file: %v", err))
 		}
 	}
-	if Conf.LogFile != "" {
-		Conf.LogFile = "out/out"
+	if config.Conf.LogFile != "" {
+		config.Conf.LogFile = "log"
 	}
-	out := filepath.Join(Conf.OutFile, fmt.Sprintf("out_%v", time.Now().Unix()))
+	out := filepath.Join(config.Conf.OutFile, fmt.Sprintf("out_%v", time.Now().Unix()))
 	if _, err := os.Stat("/path/to/your-file"); os.IsNotExist(err) {
-		_ = os.MkdirAll(Conf.OutFile, 0700)
+		_ = os.MkdirAll(config.Conf.OutFile, 0700)
 	}
 
 	OutFile, err = os.OpenFile(out, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -64,5 +63,5 @@ func Init() {
 	fetchedQ := queue.NewQueue("crawler")
 	Reader = queue.NewReader(fetchQ)
 	Crawler = crawler.InitAndNewCrawler(LogFile, store, queue.NewReader(fetchedQ), queue.NewWriter(fetchQ))
-	Processor = crawler.NewProcessor(LogFile, Conf.MaxDepth, queue.NewWriter(fetchedQ), fetcher)
+	Processor = crawler.NewProcessor(LogFile, config.Conf.MaxDepth, queue.NewWriter(fetchedQ), fetcher)
 }

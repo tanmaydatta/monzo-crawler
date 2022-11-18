@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"monzo-crawler/config"
 	it "monzo-crawler/init"
 	"monzo-crawler/pkg/queue"
 	"net/url"
@@ -21,7 +22,7 @@ func main() {
 		panic(fmt.Errorf("Invalid argument %v", err))
 	}
 	it.Init()
-	for i := 0; i < it.Conf.WorkersToFetchURL; i++ {
+	for i := 0; i < config.Conf.WorkersToFetchURL; i++ {
 		go func() {
 			for {
 				ele, err := it.Reader.Read()

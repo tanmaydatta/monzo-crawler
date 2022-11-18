@@ -6,4 +6,7 @@ type Config struct {
 	Env               string
 	LogFile           string `mapstructure:"log_file"`
 	OutFile           string `mapstructure:"out_file"`
+	RequestTimeout    int    `mapstructure:"request_timeout"`
 }
+
+var Conf Config
