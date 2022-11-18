@@ -44,9 +44,9 @@ func (f *fetcher) FetchChildURLs(url string) ([]string, error) {
 
 func (f *fetcher) fetchURL(url string) (string, error) {
 	var body []byte
+	var err error
 	retry.Do(
 		func() error {
-			var err error
 			var resp *http.Response
 			resp, err = f.client.Get(url)
 			if err != nil {
@@ -59,7 +59,7 @@ func (f *fetcher) fetchURL(url string) (string, error) {
 			}
 			return nil
 		}, retry.Attempts(uint(f.maxAttempts)), retry.MaxDelay(f.maxDelay))
-	return string(body), nil
+	return string(body), err
 }
 
 func (f *fetcher) FetchRobotsTxt(u string) string {
