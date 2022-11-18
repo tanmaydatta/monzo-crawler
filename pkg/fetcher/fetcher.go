@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 )
@@ -13,6 +14,7 @@ import (
 var fLogger *log.Logger
 
 type fetcher struct {
+	client *http.Client
 }
 
 type parser struct {
@@ -25,10 +27,11 @@ func (f *fetcher) FetchURL(url string) ([]string, error) {
 			fLogger.Println("panic occurred:", err)
 		}
 	}()
-	resp, err := http.Get(url)
+	resp, err := f.client.Get(url)
 	if err != nil {
 		return []string{}, err
 	}
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return []string{}, err
@@ -65,5 +68,6 @@ func (p *parser) parse(node *html.Node) {
 
 func NewFetcher(logOutput io.Writer) IFetcher {
 	fLogger = log.New(logOutput, "[fetcher]", log.LstdFlags)
-	return &fetcher{}
+	client := &http.Client{Timeout: 2 * time.Second}
+	return &fetcher{client: client}
 }

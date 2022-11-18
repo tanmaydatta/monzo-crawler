@@ -32,7 +32,7 @@ func NewProcessor(logOutput io.Writer, depth int, writer queue.IWriter, fetcher 
 
 func (p *processor) Process(e queue.Element) {
 	if e.GetType() != FETCH_URL {
-		pLogger.Printf("Skip event. Only process FETCH_URL events. Event: %v\n", e)
+		pLogger.Printf("Skip event. Only process FETCH_URL events. Event: %v\n", e.GetData())
 		return
 	}
 	data, ok := e.GetData().(*queue.FetchElementData)
@@ -66,20 +66,20 @@ func (p *processor) Process(e queue.Element) {
 	}
 
 	if fetched, ok := p.fetched.Load(toFetch); ok && fetched.(bool) {
-		pLogger.Printf("Already fetched. %v\n", e)
+		pLogger.Printf("Already fetched. %v\n", toFetch)
 		return
 	}
 
 	if data.Depth > p.depth {
-		pLogger.Printf("Max depth reached. event %v\n", e)
+		pLogger.Printf("Max depth reached. url %v\n", toFetch)
 		return
 	}
 	robots, err := robotstxt.FromString(data.Robots)
 	if err != nil {
-		pLogger.Printf("Invalid robots.txt Event %v\n", e)
+		pLogger.Printf("Invalid robots.txt url %v\n", toFetch)
 	}
 	if robots != nil && !robots.TestAgent(data.Path, "crawler") {
-		pLogger.Printf("Cannot fetch url due to robots.txt restriction Event %v\n", data)
+		pLogger.Printf("Cannot fetch url due to robots.txt restriction robots %v, url %v\n", data.Robots, toFetch)
 		return
 	}
 
@@ -89,7 +89,7 @@ func (p *processor) Process(e queue.Element) {
 	}
 	childUrls, err := p.fetcher.FetchURL(toFetch)
 	if err != nil {
-		pLogger.Printf("Error while fetching url. Event: %v, err: %v\n", e, err)
+		pLogger.Printf("Error while fetching url. Url: %v, err: %v\n", toFetch, err)
 		return
 	}
 	elementType = FETCHED_URLS

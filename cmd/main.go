@@ -45,8 +45,7 @@ func main() {
 	}
 	it.OutFile.Write([]byte(fmt.Sprintf("Found %+v urls for %s\n========================================\n", len(urls), baseUrl)))
 	for url := range urls {
-		fmt.Println(url)
-		// it.OutFile.Write([]byte(fmt.Sprintf("%v\n", crawler.CreateToFetchUrl(baseUrl, url))))
+		it.OutFile.Write([]byte(fmt.Sprintf("%v\n", url)))
 	}
 	it.OutFile.Close()
 }

@@ -28,6 +28,7 @@ func (s *sitemapStore) AddToSitemap(url string, urls []string) error {
 		val = map[string]bool{}
 	}
 	for _, url := range urls {
+		// fmt.Println(url)
 		val[url] = true
 	}
 	s.values[url] = val
@@ -43,7 +44,11 @@ func (s *sitemapStore) GetSitemap(url string) (map[string]bool, error) {
 
 func (s *sitemapStore) SitemapExists(url string) bool {
 	s.mu.Lock()
-	defer s.mu.Unlock()
+	defer func() {
+		s.mu.Unlock()
+		// fmt.Println("unlocked")
+	}()
+	// fmt.Println("locked")
 	val, ok := s.inProcess[url]
 	if !ok {
 		return false
@@ -67,7 +72,8 @@ func (s *sitemapStore) AddProgressToSitemap(baseUrl string, remove string, add [
 	if !ok {
 		val = map[string]bool{}
 	}
-	if _, ok = val[remove]; ok && len(remove) > 0 {
+	if _, ok = val[remove]; ok {
+		// fmt.Println(remove)
 		delete(val, remove)
 	}
 	for _, url := range add {
@@ -76,6 +82,7 @@ func (s *sitemapStore) AddProgressToSitemap(baseUrl string, remove string, add [
 	s.inProcess[baseUrl] = val
 	go func() {
 		if s.SitemapExists(baseUrl) {
+			// fmt.Println("fiihbvv")
 			sm, _ := s.GetSitemap(baseUrl)
 			s.mu.Lock()
 			if _, ok := s.results[baseUrl]; !ok {
@@ -84,6 +91,14 @@ func (s *sitemapStore) AddProgressToSitemap(baseUrl string, remove string, add [
 			res := s.results[baseUrl]
 			s.mu.Unlock()
 			res <- sm
+		} else {
+			s.mu.Lock()
+			// fmt.Println(len(s.inProcess[baseUrl]))
+			// if len(s.inProcess[baseUrl]) == 1 {
+			// 	fmt.Println(s.inProcess[baseUrl])
+			// }
+			s.mu.Unlock()
+			// fmt.Println("printed")
 		}
 	}()
 }

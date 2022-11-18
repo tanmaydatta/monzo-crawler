@@ -50,6 +50,11 @@ func (c *crawler) WaitAndGetSitemap(url string) (map[string]bool, error) {
 }
 
 func (c *crawler) processFetchedURLs() {
+	defer func() {
+		if err := recover(); err != nil {
+			cLogger.Println("panic occurred:", err)
+		}
+	}()
 	var e queue.Element
 	var err error
 	for e, err = c.reader.Read(); err != queue.EOF; e, err = c.reader.Read() {
@@ -65,21 +70,27 @@ func (c *crawler) processFetchedURLs() {
 			c.siteMapStore.AddProgressToSitemap(baseURL, data.Path, []string{})
 		case FETCHED_URLS:
 			data := e.GetData().(*queue.FetchedElementData)
+			// fmt.Printf("depth: %v\n", data.Depth)
 			urls := make([]string, 0, len(data.Urls))
+			urlsToFetch := make([]string, 0, len(data.Urls))
 			for _, url := range data.Urls {
+				// fmt.Println(VerifySameDomain(data.BaseUrl, "/:true"))
 				if !VerifySameDomain(data.BaseUrl, url) {
 					continue
 				}
+				toFetch := CreateToFetchUrl(data.CurUrl, url)
+				urlsToFetch = append(urlsToFetch, toFetch)
 				urls = append(urls, url)
+
 				go c.writer.Write(queue.NewFetchQueueElement(&queue.FetchElementData{
 					Path:    url,
 					BaseUrl: baseURL,
-					CurUrl:  CreateToFetchUrl(data.CurUrl, url),
+					CurUrl:  toFetch,
 					Depth:   data.Depth + 1,
 				}, baseURL, FETCH_URL))
 			}
 
-			c.siteMapStore.AddToSitemap(baseURL, urls)
+			c.siteMapStore.AddToSitemap(baseURL, urlsToFetch)
 			c.siteMapStore.AddProgressToSitemap(baseURL, data.Path, urls)
 		}
 	}
