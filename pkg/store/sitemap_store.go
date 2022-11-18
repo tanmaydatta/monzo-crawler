@@ -53,13 +53,6 @@ func (s *sitemapStore) SitemapExists(url string) bool {
 	return len(val) == 0
 }
 
-func (s *sitemapStore) SitemapInProcess(url string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	_, ok := s.inProcess[url]
-	return ok
-}
-
 func (s *sitemapStore) AddProgressToSitemap(baseUrl string, remove string, add []string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

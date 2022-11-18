@@ -25,7 +25,7 @@ func (c *crawler) StartCrawl(url string) error {
 	}
 	base, _ := urlpkg.Parse("/")
 	url = pUrl.ResolveReference(base).String()
-	if c.siteMapStore.SitemapExists(url) || c.siteMapStore.SitemapInProcess(url) {
+	if c.siteMapStore.SitemapExists(url) {
 		return nil
 	}
 	c.siteMapStore.AddToSitemap(url, []string{})
