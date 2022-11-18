@@ -13,7 +13,6 @@ func VerifySameDomain(baseUrl, path string) bool {
 }
 
 func CreateToFetchUrl(baseUrl, path string) *url.URL {
-
 	b, _ := url.Parse(baseUrl)
 	u, _ := url.Parse(path)
 	u.Fragment = ""

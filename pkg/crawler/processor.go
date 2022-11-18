@@ -5,7 +5,6 @@ import (
 	"log"
 	"monzo-crawler/pkg/fetcher"
 	"monzo-crawler/pkg/queue"
-	"strings"
 	"sync"
 
 	"github.com/temoto/robotstxt"
@@ -83,10 +82,6 @@ func (p *processor) Process(e queue.Element) {
 		return
 	}
 
-	if !strings.Contains(toFetch.String(), data.BaseUrl) {
-		pLogger.Printf("Out of domain url")
-		return
-	}
 	childUrls, err := p.fetcher.FetchChildURLs(toFetch.String())
 	if err != nil {
 		pLogger.Printf("Error while fetching url. Url: %v, err: %v\n", toFetch, err)
